@@ -4,13 +4,15 @@ import "os"
 
 // Config holds the application configuration.
 type Config struct {
-	ServerPort string
+	DatabaseDSN string
+	ServerPort  string
 }
 
 // New creates a new Config instance with the default values.
 func New() *Config {
 	return &Config{
-		ServerPort: getEnv("ServerPort", "8080"),
+		DatabaseDSN: getEnv("DatabaseDSN", "postgres://username:password@localhost:5432/task-manager-database"),
+		ServerPort:  getEnv("ServerPort", "8080"),
 	}
 }
 
