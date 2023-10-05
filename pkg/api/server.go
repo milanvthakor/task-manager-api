@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -25,7 +24,7 @@ func NewServer(router *gin.Engine, port string) *Server {
 // Start starts the API server.
 func (s *Server) Start() {
 	addr := ":" + s.port
-	fmt.Printf("Server is running on port %s...\n", s.port)
+	log.Printf("Server is running on port %s...\n", s.port)
 	if err := http.ListenAndServe(addr, s.router); err != nil {
 		log.Fatalf("failed to start the server: %v", err)
 	}

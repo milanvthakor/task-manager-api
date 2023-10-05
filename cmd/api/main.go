@@ -5,7 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/milanvthakor/task-manager-api/internal/auth"
 	"github.com/milanvthakor/task-manager-api/internal/database"
+	"github.com/milanvthakor/task-manager-api/internal/models"
 	"github.com/milanvthakor/task-manager-api/pkg/api"
 	"github.com/milanvthakor/task-manager-api/pkg/config"
 )
@@ -20,14 +22,23 @@ func main() {
 	cfg := config.New()
 
 	// Initialize the database.
-	_, err := database.Init(cfg.DatabaseDSN)
+	db, err := database.Init(cfg.DatabaseDSN)
 	if err != nil {
 		log.Fatalf("Failed to initialize the database: %v", err)
 	}
 	defer database.Close()
 
+	// Initialize the new instance of the Application struct containing dependencies
+	app := &config.Application{
+		UserRepository: *models.NewUserRepository(db),
+	}
+
 	// Initialize the Gin router.
 	r := gin.Default()
+
+	// Set up API routes
+	apiRoutes := r.Group("/api")
+	apiRoutes.POST("/register", auth.RegisterHandler(app))
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {

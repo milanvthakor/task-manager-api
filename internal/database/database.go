@@ -4,29 +4,44 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"sync"
 
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
+var (
+	db   *sql.DB
+	once sync.Once
+)
 
 // Init initializes the database connection.
 func Init(databaseDSN string) (*sql.DB, error) {
 	var err error
 
-	// Open a new database connection
-	db, err = sql.Open("postgres", databaseDSN)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database connection: %w", err)
-	}
+	// Use sync.Once to ensure initialization only happens once.
+	once.Do(func() {
+		// Open a new database connection
+		db, err = sql.Open("postgres", databaseDSN)
+		if err != nil {
+			err = fmt.Errorf("failed to open database connection: %w", err)
+			return
+		}
 
-	// Test the database connection.
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
+		// Test the database connection.
+		if err = db.Ping(); err != nil {
+			err = fmt.Errorf("failed to ping database: %w", err)
+			return
+		}
 
-	fmt.Println("Connected to the database")
-	return db, nil
+		log.Println("Connected to the database")
+	})
+
+	return db, err
+}
+
+// GetDB returns the database instance.
+func GetDB() *sql.DB {
+	return db
 }
 
 // Close closes the database connection.
