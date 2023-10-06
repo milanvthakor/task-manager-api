@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/milanvthakor/task-manager-api/internal/models"
@@ -169,4 +170,73 @@ func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 		"message": "Task updated successfully",
 		"task":    updatedTask,
 	})
+}
+
+// updateResult represents the result of each task update operation.
+type updateResult struct {
+	ID      uint   `json:"id"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
+}
+
+// MarkTasksDoneHandler allows users to mark multiple tasks as "done".
+func MarkTasksDoneHandler(ctx *gin.Context, app *config.Application) {
+	userID := ctx.MustGet("userID").(uint)
+
+	// Parse task IDs from the request body
+	var taskIDs []uint
+	if err := ctx.ShouldBindJSON(&taskIDs); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID(s)"})
+		return
+	}
+
+	// Create a channel to receive task update results
+	updateResultChan := make(chan *updateResult, len(taskIDs))
+	// Create a wait group to manage task update operation goroutines
+	wg := sync.WaitGroup{}
+
+	// Iterate over the task IDs and update them concurrently
+	for _, taskID := range taskIDs {
+		wg.Add(1)
+
+		go func(taskID uint) {
+			defer wg.Done()
+
+			// Retrieve the task from the database
+			task, err := app.TaskRepository.GetTaskByID(uint(taskID))
+			if err != nil {
+				log.Printf("Warning: Failed to get task details from the database: %v", err)
+				updateResultChan <- &updateResult{ID: taskID, Error: "Failed to retrieve task"}
+				return
+			}
+
+			// Check if the task is associated with the authenticated user
+			if task == nil || task.UserID != userID {
+				updateResultChan <- &updateResult{ID: taskID, Error: "Task not found"}
+				return
+			}
+
+			// Update the task status to "done" and save it to the database
+			task.Status = models.TaskStatusDone
+			if _, err := app.TaskRepository.UpdateTask(task); err != nil {
+				log.Printf("Warning: Failed to update task: %v", err)
+				updateResultChan <- &updateResult{ID: taskID, Error: "Failed to update task"}
+				return
+			}
+
+			updateResultChan <- &updateResult{ID: taskID, Message: "Task marked as done successfully"}
+		}(taskID)
+	}
+
+	// Wait for all task update operation goroutines to finish
+	wg.Wait()
+	close(updateResultChan)
+
+	// Collect results from goroutines
+	var updatedResults []*updateResult
+	for result := range updateResultChan {
+		updatedResults = append(updatedResults, result)
+	}
+
+	ctx.JSON(http.StatusOK, updatedResults)
 }

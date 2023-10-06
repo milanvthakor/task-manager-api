@@ -51,6 +51,7 @@ func main() {
 	taskApiRoutes.GET("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.GetTaskByIDHandler))
 	taskApiRoutes.DELETE("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.DeleteTaskByIDHandler))
 	taskApiRoutes.PUT("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.UpdateTaskByIDHandler))
+	taskApiRoutes.PATCH("/mark-done", utils.InjectApp(app, auth.AuthenticateMiddleware), utils.InjectApp(app, task.MarkTasksDoneHandler))
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {
