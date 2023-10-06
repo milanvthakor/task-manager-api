@@ -14,13 +14,13 @@ import (
 func ValidateInput(ctx *gin.Context, app *config.Application) {
 	var ud userData
 	if err := ctx.ShouldBindJSON(&ud); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
 		return
 	}
 
 	// Validate inputs.
 	if err := ud.validate(); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -36,7 +36,7 @@ func Authenticate(ctx *gin.Context, app *config.Application) {
 	// Extract the JWT token from the authorization header
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 	if token == "" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Missing token"})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Missing token"})
 		return
 	}
 
@@ -44,7 +44,7 @@ func Authenticate(ctx *gin.Context, app *config.Application) {
 	claims, err := validateToken(app.Config.SecretKey, token)
 	if err != nil {
 		log.Printf("Warning: Failed to validate JWT token: %v", err)
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
 		return
 	}
 

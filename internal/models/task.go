@@ -73,9 +73,22 @@ func (r *TaskRepository) UpdateTask(task *Task) (*Task, error) {
 }
 
 // DeleteTask deletes a task from the database.
-func (r *TaskRepository) DeleteTask(taskID uint) error {
-	_, err := r.db.Exec("DELETE FROM tasks WHERE id = $1", taskID)
-	return err
+func (r *TaskRepository) DeleteTask(taskID, userID uint) error {
+	res, err := r.db.Exec("DELETE FROM tasks WHERE id = $1 AND userID = $2", taskID, userID)
+	if err != nil {
+		return err
+	}
+
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if count < 1 {
+		return sql.ErrNoRows // No rows were deleted
+	}
+
+	return nil
 }
 
 // ListTasksByUserID retrieves a list of tasks belonging to a user in the database.

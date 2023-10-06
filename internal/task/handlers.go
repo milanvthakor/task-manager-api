@@ -1,6 +1,7 @@
 package task
 
 import (
+	"database/sql"
 	"errors"
 	"log"
 	"net/http"
@@ -62,7 +63,7 @@ func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
+	ctx.JSON(http.StatusCreated, gin.H{
 		"message": "Task created successfully",
 		"task":    newTask,
 	})
@@ -95,4 +96,31 @@ func GetTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	}
 
 	ctx.JSON(http.StatusOK, task)
+}
+
+// DeleteTaskByIDHandler handles the deletion of a task by ID only if it's associated with the authenticated user.
+func DeleteTaskByIDHandler(ctx *gin.Context, app *config.Application) {
+	userID := ctx.MustGet("userID").(uint)
+
+	// Get the task ID from the URL parameters
+	taskIDStr := ctx.Param("id")
+	taskID, err := strconv.ParseUint(taskIDStr, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid task ID"})
+		return
+	}
+
+	// Delete the task from the database
+	err = app.TaskRepository.DeleteTask(uint(taskID), userID)
+	if err == sql.ErrNoRows {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+		return
+	}
+	if err != nil {
+		log.Printf("Warning: Failed to delete task from the database: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete task"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
 }
