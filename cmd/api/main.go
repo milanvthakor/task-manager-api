@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -55,7 +56,7 @@ func main() {
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {
-		c.String(200, "Server is up and running")
+		c.JSON(http.StatusOK, gin.H{"message": "Server is up and running"})
 	})
 
 	// Start the server on the specified port.
