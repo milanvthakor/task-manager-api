@@ -4,7 +4,7 @@ import "database/sql"
 
 // User represents a user in the application.
 type User struct {
-	Id       uint   `json:"id"`
+	ID       uint   `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -28,7 +28,7 @@ func (r *UserRepository) CreateUser(user *User) error {
 // GetUserByEmail retrieves a user by email from the database.
 func (r *UserRepository) GetUserByEmail(email string) (*User, error) {
 	var user User
-	err := r.db.QueryRow("SELECT * FROM users WHERE email = $1", email).Scan(&user.Id, &user.Email, &user.Password)
+	err := r.db.QueryRow("SELECT * FROM users WHERE email = $1", email).Scan(&user.ID, &user.Email, &user.Password)
 	if err == sql.ErrNoRows {
 		return nil, nil // Return nil when no records are found
 	}

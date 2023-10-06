@@ -94,7 +94,7 @@ func LoginHandler(ctx *gin.Context, app *config.Application) {
 	}
 
 	// Generate a JWT token.
-	token, err := generateToken(app.Config.SecretKey, user.Email, user.Id)
+	token, err := generateToken(app.Config.SecretKey, user.Email, user.ID)
 	if err != nil {
 		log.Printf("Warning: Failed to generate token: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate token"})
