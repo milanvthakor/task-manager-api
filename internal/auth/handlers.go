@@ -3,10 +3,8 @@ package auth
 import (
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/milanvthakor/task-manager-api/internal/models"
 	"github.com/milanvthakor/task-manager-api/pkg/config"
 	"golang.org/x/crypto/bcrypt"
@@ -87,22 +85,4 @@ func LoginHandler(ctx *gin.Context, app *config.Application) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Login successful", "token": token})
-}
-
-// generateToken generates a JWT token.
-func generateToken(secretKey, email string, userID uint) (string, error) {
-	claims := jwt.MapClaims{
-		"email":  email,
-		"userID": userID,
-		"exp":    time.Now().Add(time.Hour).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	tokenString, err := token.SignedString([]byte(secretKey))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }

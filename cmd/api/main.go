@@ -42,14 +42,14 @@ func main() {
 
 	// Set up API routes
 	apiRoutes := r.Group("/api")
-	apiRoutes.POST("/register", utils.InjectApp(app, auth.ValidateInput), utils.InjectApp(app, auth.RegisterHandler))
-	apiRoutes.POST("/login", utils.InjectApp(app, auth.ValidateInput), utils.InjectApp(app, auth.LoginHandler))
+	apiRoutes.POST("/register", utils.InjectApp(app, auth.ValidateInputMiddleware), utils.InjectApp(app, auth.RegisterHandler))
+	apiRoutes.POST("/login", utils.InjectApp(app, auth.ValidateInputMiddleware), utils.InjectApp(app, auth.LoginHandler))
 	// Set up Task API routes
 	taskApiRoutes := apiRoutes.Group("/tasks")
-	taskApiRoutes.POST("/", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.CreateTaskHandler))
-	taskApiRoutes.GET("/:id", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.GetTaskByIDHandler))
-	taskApiRoutes.DELETE("/:id", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.DeleteTaskByIDHandler))
-	taskApiRoutes.PUT("/:id", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.UpdateTaskByIDHandler))
+	taskApiRoutes.POST("/", utils.InjectApp(app, auth.AuthenticateMiddleware), utils.InjectApp(app, task.CreateTaskHandler))
+	taskApiRoutes.GET("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.GetTaskByIDHandler))
+	taskApiRoutes.DELETE("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.DeleteTaskByIDHandler))
+	taskApiRoutes.PUT("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.UpdateTaskByIDHandler))
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {

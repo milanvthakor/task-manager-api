@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/milanvthakor/task-manager-api/internal/models"
@@ -12,8 +11,8 @@ import (
 	"github.com/milanvthakor/task-manager-api/pkg/config"
 )
 
-// TaskData holds the task details.
-type TaskData struct {
+// taskData holds the task details.
+type taskData struct {
 	Title       string            `json:"title"`
 	Description string            `json:"description"`
 	Status      models.TaskStatus `json:"status"`
@@ -23,7 +22,7 @@ type TaskData struct {
 func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 	userID := ctx.MustGet("userID").(uint)
 
-	var td TaskData
+	var td taskData
 	if err := ctx.ShouldBindJSON(&td); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
 		return
@@ -62,14 +61,7 @@ func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 // GetTaskByIDHandler handles the retrieval of a task by ID only if it's associated with the authenticated user.
 func GetTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	userID := ctx.MustGet("userID").(uint)
-
-	// Get the task ID from the URL parameters
-	taskIDStr := ctx.Param("id")
-	taskID, err := strconv.ParseUint(taskIDStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid task ID"})
-		return
-	}
+	taskID := ctx.MustGet("taskID").(uint)
 
 	// Retrieve the task from the database
 	task, err := app.TaskRepository.GetTaskByID(uint(taskID))
@@ -91,17 +83,10 @@ func GetTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 // DeleteTaskByIDHandler handles the deletion of a task by ID only if it's associated with the authenticated user.
 func DeleteTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	userID := ctx.MustGet("userID").(uint)
-
-	// Get the task ID from the URL parameters
-	taskIDStr := ctx.Param("id")
-	taskID, err := strconv.ParseUint(taskIDStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid task ID"})
-		return
-	}
+	taskID := ctx.MustGet("taskID").(uint)
 
 	// Delete the task from the database
-	err = app.TaskRepository.DeleteTask(uint(taskID), userID)
+	err := app.TaskRepository.DeleteTask(uint(taskID), userID)
 	if err == sql.ErrNoRows {
 		ctx.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
 		return
@@ -118,14 +103,7 @@ func DeleteTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 // UpdateTaskByIDHandler handles the updating of a task by ID only if it's associated with the authentication user.
 func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	userID := ctx.MustGet("userID").(uint)
-
-	// Get the task ID from the URL parameters
-	taskIDStr := ctx.Param("id")
-	taskID, err := strconv.ParseUint(taskIDStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid task ID"})
-		return
-	}
+	taskID := ctx.MustGet("taskID").(uint)
 
 	// Retrieve the task from the database
 	task, err := app.TaskRepository.GetTaskByID(uint(taskID))
@@ -142,7 +120,7 @@ func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	}
 
 	// Parse request body to get updated details
-	var td TaskData
+	var td taskData
 	if err := ctx.ShouldBindJSON(&td); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
 		return

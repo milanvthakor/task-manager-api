@@ -6,20 +6,19 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/milanvthakor/task-manager-api/internal/validator"
 	"github.com/milanvthakor/task-manager-api/pkg/config"
 )
 
-// Middleware for authentication input validation
-func ValidateInput(ctx *gin.Context, app *config.Application) {
+// ValidateInputMiddleware validates the authentication inputs.
+func ValidateInputMiddleware(ctx *gin.Context, app *config.Application) {
 	var ud userData
 	if err := ctx.ShouldBindJSON(&ud); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
 		return
 	}
 
-	// Validate inputs.
+	// Validate inputs
 	if !validator.IsValidEmail(ud.Email) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid email"})
 		return
@@ -34,8 +33,8 @@ func ValidateInput(ctx *gin.Context, app *config.Application) {
 	ctx.Next()
 }
 
-// Authenticate authenticates the incoming request by validating JWT token.
-func Authenticate(ctx *gin.Context, app *config.Application) {
+// AuthenticateMiddleware authenticates the incoming request by validating JWT token.
+func AuthenticateMiddleware(ctx *gin.Context, app *config.Application) {
 	// Get the authorization header
 	authHeader := ctx.GetHeader("Authorization")
 	// Extract the JWT token from the authorization header
@@ -58,26 +57,4 @@ func Authenticate(ctx *gin.Context, app *config.Application) {
 	ctx.Set("userID", uint(userID))
 
 	ctx.Next()
-}
-
-// validateToken validates a JWT token.
-func validateToken(secretKey, tokenString string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		// Validate the signing method
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, jwt.ErrSignatureInvalid
-		}
-
-		return []byte(secretKey), nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims, nil
-	}
-
-	return nil, jwt.ErrSignatureInvalid
 }
