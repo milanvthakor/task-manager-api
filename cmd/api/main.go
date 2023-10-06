@@ -33,6 +33,7 @@ func main() {
 	app := &config.Application{
 		Config:         cfg,
 		UserRepository: models.NewUserRepository(db),
+		TaskRepository: models.NewTaskRepository(db),
 	}
 
 	// Initialize the Gin router.

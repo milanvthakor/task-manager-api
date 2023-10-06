@@ -6,4 +6,5 @@ import "github.com/milanvthakor/task-manager-api/internal/models"
 type Application struct {
 	Config         *Config
 	UserRepository *models.UserRepository
+	TaskRepository *models.TaskRepository
 }
