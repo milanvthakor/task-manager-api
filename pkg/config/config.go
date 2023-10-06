@@ -6,6 +6,7 @@ import "os"
 type Config struct {
 	DatabaseDSN string
 	ServerPort  string
+	SecretKey   string
 }
 
 // New creates a new Config instance with the default values.
@@ -13,6 +14,7 @@ func New() *Config {
 	return &Config{
 		DatabaseDSN: getEnv("DatabaseDSN", "postgres://username:password@localhost:5432/task-manager-database"),
 		ServerPort:  getEnv("ServerPort", "8080"),
+		SecretKey:   getEnv("SecretKey", "secretkeyforjwt"),
 	}
 }
 

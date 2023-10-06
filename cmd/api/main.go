@@ -8,6 +8,7 @@ import (
 	"github.com/milanvthakor/task-manager-api/internal/auth"
 	"github.com/milanvthakor/task-manager-api/internal/database"
 	"github.com/milanvthakor/task-manager-api/internal/models"
+	"github.com/milanvthakor/task-manager-api/internal/utils"
 	"github.com/milanvthakor/task-manager-api/pkg/api"
 	"github.com/milanvthakor/task-manager-api/pkg/config"
 )
@@ -30,7 +31,8 @@ func main() {
 
 	// Initialize the new instance of the Application struct containing dependencies
 	app := &config.Application{
-		UserRepository: *models.NewUserRepository(db),
+		Config:         cfg,
+		UserRepository: models.NewUserRepository(db),
 	}
 
 	// Initialize the Gin router.
@@ -38,7 +40,8 @@ func main() {
 
 	// Set up API routes
 	apiRoutes := r.Group("/api")
-	apiRoutes.POST("/register", auth.RegisterHandler(app))
+	apiRoutes.POST("/register", utils.InjectApp(app, auth.ValidateInput), utils.InjectApp(app, auth.RegisterHandler))
+	apiRoutes.POST("/login", utils.InjectApp(app, auth.ValidateInput), utils.InjectApp(app, auth.LoginHandler))
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {
