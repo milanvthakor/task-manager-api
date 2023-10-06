@@ -32,10 +32,10 @@ func NewTaskRepository(db *sql.DB) *TaskRepository {
 
 // CreateTasks inserts a new task into the database.
 func (r *TaskRepository) CreateTask(task *Task) (*Task, error) {
-	row := r.db.QueryRow("INSERT INTO tasks (title, description, status, userId) VALUES ($1, $2, $3, $4) RETURNING *", task.Title, task.Description, task.Status, task.UserID)
+	row := r.db.QueryRow("INSERT INTO tasks (title, description, status, userID) VALUES ($1, $2, $3, $4) RETURNING *", task.Title, task.Description, task.Status, task.UserID)
 
 	var newTask Task
-	err := row.Scan(&newTask.Title, &newTask.Description, &newTask.Status, &newTask.UserID)
+	err := row.Scan(&newTask.ID, &newTask.Title, &newTask.Description, &newTask.Status, &newTask.UserID)
 	if err != nil {
 		return nil, err
 	}

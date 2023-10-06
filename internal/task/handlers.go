@@ -56,7 +56,7 @@ func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 	}
 	newTask, err := app.TaskRepository.CreateTask(task)
 	if err != nil {
-		log.Printf("Waiting: Failed to create task: %v", err)
+		log.Printf("Warning: Failed to create task: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create task"})
 		return
 	}

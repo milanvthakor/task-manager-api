@@ -8,6 +8,7 @@ import (
 	"github.com/milanvthakor/task-manager-api/internal/auth"
 	"github.com/milanvthakor/task-manager-api/internal/database"
 	"github.com/milanvthakor/task-manager-api/internal/models"
+	"github.com/milanvthakor/task-manager-api/internal/task"
 	"github.com/milanvthakor/task-manager-api/internal/utils"
 	"github.com/milanvthakor/task-manager-api/pkg/api"
 	"github.com/milanvthakor/task-manager-api/pkg/config"
@@ -43,6 +44,9 @@ func main() {
 	apiRoutes := r.Group("/api")
 	apiRoutes.POST("/register", utils.InjectApp(app, auth.ValidateInput), utils.InjectApp(app, auth.RegisterHandler))
 	apiRoutes.POST("/login", utils.InjectApp(app, auth.ValidateInput), utils.InjectApp(app, auth.LoginHandler))
+	// Set up Task API routes
+	taskApiRoutes := apiRoutes.Group("/tasks")
+	taskApiRoutes.POST("/", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.CreateTaskHandler))
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {

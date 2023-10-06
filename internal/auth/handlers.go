@@ -63,7 +63,7 @@ func RegisterHandler(ctx *gin.Context, app *config.Application) {
 		Password: string(hash),
 	}
 	if err := app.UserRepository.CreateUser(user); err != nil {
-		log.Printf("Waiting: Failed to register user: %v", err)
+		log.Printf("Warning: Failed to register user: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to register user"})
 		return
 	}
@@ -105,11 +105,11 @@ func LoginHandler(ctx *gin.Context, app *config.Application) {
 }
 
 // generateToken generates a JWT token.
-func generateToken(secretKey, email string, userId uint) (string, error) {
+func generateToken(secretKey, email string, userID uint) (string, error) {
 	claims := jwt.MapClaims{
-		"email": email,
-		"id":    userId,
-		"exp":   time.Now().Add(time.Hour).Unix(),
+		"email":  email,
+		"userID": userID,
+		"exp":    time.Now().Add(time.Hour).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
