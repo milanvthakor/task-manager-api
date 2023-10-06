@@ -166,7 +166,7 @@ func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Task updated successfully",
 		"task":    updatedTask,
 	})
