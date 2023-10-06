@@ -14,17 +14,17 @@ import (
 func ValidateInputMiddleware(ctx *gin.Context, app *config.Application) {
 	var ud userData
 	if err := ctx.ShouldBindJSON(&ud); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid inputs"})
 		return
 	}
 
 	// Validate inputs
 	if !validator.IsValidEmail(ud.Email) {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid email"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
 		return
 	}
 	if !validator.IsValidPassword(ud.Password) {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid password. The length must be between 8 and 12 characters"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid password. The length must be between 8 and 12 characters"})
 		return
 	}
 
@@ -40,7 +40,7 @@ func AuthenticateMiddleware(ctx *gin.Context, app *config.Application) {
 	// Extract the JWT token from the authorization header
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 	if token == "" {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Missing token"})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing token"})
 		return
 	}
 
@@ -48,7 +48,7 @@ func AuthenticateMiddleware(ctx *gin.Context, app *config.Application) {
 	claims, err := validateToken(app.Config.SecretKey, token)
 	if err != nil {
 		log.Printf("Warning: Failed to validate JWT token: %v", err)
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
 

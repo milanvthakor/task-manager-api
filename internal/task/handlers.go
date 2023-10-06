@@ -26,7 +26,7 @@ func GetTasksHandler(ctx *gin.Context, app *config.Application) {
 	tasks, err := app.TaskRepository.ListTasksByUserID(userID)
 	if err != nil {
 		log.Printf("Warning: Failed to retrieve tasks: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve tasks"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tasks"})
 		return
 	}
 
@@ -39,17 +39,17 @@ func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 
 	var td taskData
 	if err := ctx.ShouldBindJSON(&td); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid inputs"})
 		return
 	}
 
 	// Validate inputs.
 	if validator.IsBlank(td.Title) {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid title. It must not be empty"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid title. It must not be empty"})
 		return
 	}
 	if !validator.IsValidTaskStatus(td.Status) {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": `Invalid status. It can have one of the following values: "todo", "in progress", "done"`})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": `Invalid status. It can have one of the following values: "todo", "in progress", "done"`})
 		return
 	}
 
@@ -63,7 +63,7 @@ func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 	newTask, err := app.TaskRepository.CreateTask(task)
 	if err != nil {
 		log.Printf("Warning: Failed to create task: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create task"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create task"})
 		return
 	}
 
@@ -82,13 +82,13 @@ func GetTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	task, err := app.TaskRepository.GetTaskByID(uint(taskID))
 	if err != nil {
 		log.Printf("Warning: Failed to get task details from the database: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve task"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve task"})
 		return
 	}
 
 	// Check if the task is associated with the authenticated user
 	if task == nil || task.UserID != userID {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 		return
 	}
 
@@ -103,12 +103,12 @@ func DeleteTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	// Delete the task from the database
 	err := app.TaskRepository.DeleteTask(uint(taskID), userID)
 	if err == sql.ErrNoRows {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 		return
 	}
 	if err != nil {
 		log.Printf("Warning: Failed to delete task from the database: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete task"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete task"})
 		return
 	}
 
@@ -124,20 +124,20 @@ func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	task, err := app.TaskRepository.GetTaskByID(uint(taskID))
 	if err != nil {
 		log.Printf("Warning: Failed to get task details from the database: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve task"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve task"})
 		return
 	}
 
 	// Check if the task is associated with the authenticated user
 	if task == nil || task.UserID != userID {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 		return
 	}
 
 	// Parse request body to get updated details
 	var td taskData
 	if err := ctx.ShouldBindJSON(&td); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid inputs"})
 		return
 	}
 
@@ -147,7 +147,7 @@ func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	}
 	if !validator.IsBlank(string(td.Status)) {
 		if !validator.IsValidTaskStatus(td.Status) {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": `Invalid status. It can have one of the following values: "todo", "in progress", "done"`})
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": `Invalid status. It can have one of the following values: "todo", "in progress", "done"`})
 			return
 		}
 
@@ -161,7 +161,7 @@ func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	updatedTask, err := app.TaskRepository.UpdateTask(task)
 	if err != nil {
 		log.Printf("Warning: Failed to update task: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update task"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update task"})
 		return
 	}
 

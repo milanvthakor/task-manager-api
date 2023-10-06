@@ -24,11 +24,11 @@ func RegisterHandler(ctx *gin.Context, app *config.Application) {
 	user, err := app.UserRepository.GetUserByEmail(userData.Email)
 	if err != nil {
 		log.Printf("Warning: Failed to get user details from the database: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to verify the email"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify the email"})
 		return
 	}
 	if user != nil {
-		ctx.JSON(http.StatusConflict, gin.H{"message": "Email already exists"})
+		ctx.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
 		return
 	}
 
@@ -36,7 +36,7 @@ func RegisterHandler(ctx *gin.Context, app *config.Application) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Warning: Failed to generate hash from the password: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to process the password"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process the password"})
 		return
 	}
 
@@ -47,7 +47,7 @@ func RegisterHandler(ctx *gin.Context, app *config.Application) {
 	}
 	if err := app.UserRepository.CreateUser(user); err != nil {
 		log.Printf("Warning: Failed to register user: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to register user"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
 		return
 	}
 
@@ -62,17 +62,17 @@ func LoginHandler(ctx *gin.Context, app *config.Application) {
 	user, err := app.UserRepository.GetUserByEmail(userData.Email)
 	if err != nil {
 		log.Printf("Warning: Failed to get user details from the database: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to verify the email"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify the email"})
 		return
 	}
 	if user == nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Email doesn't exists"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Email doesn't exists"})
 		return
 	}
 
 	// Compare hashed password with the input password.
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userData.Password)); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Wrong Password"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong Password"})
 		return
 	}
 
@@ -80,7 +80,7 @@ func LoginHandler(ctx *gin.Context, app *config.Application) {
 	token, err := generateToken(app.Config.SecretKey, user.Email, user.ID)
 	if err != nil {
 		log.Printf("Warning: Failed to generate token: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate token"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}
 

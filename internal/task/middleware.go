@@ -12,7 +12,7 @@ func ExtractTaskIDMiddleware(ctx *gin.Context) {
 	taskIDStr := ctx.Param("id")
 	taskID, err := strconv.ParseUint(taskIDStr, 10, 64)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid task ID"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
 		return
 	}
 
