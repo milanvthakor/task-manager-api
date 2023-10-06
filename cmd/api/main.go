@@ -47,6 +47,7 @@ func main() {
 	// Set up Task API routes
 	taskApiRoutes := apiRoutes.Group("/tasks")
 	taskApiRoutes.POST("/", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.CreateTaskHandler))
+	taskApiRoutes.GET("/:id", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.GetTaskByIDHandler))
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {
