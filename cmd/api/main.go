@@ -46,6 +46,7 @@ func main() {
 	apiRoutes.POST("/login", utils.InjectApp(app, auth.ValidateInputMiddleware), utils.InjectApp(app, auth.LoginHandler))
 	// Set up Task API routes
 	taskApiRoutes := apiRoutes.Group("/tasks")
+	taskApiRoutes.GET("/", utils.InjectApp(app, auth.AuthenticateMiddleware), utils.InjectApp(app, task.GetTasksHandler))
 	taskApiRoutes.POST("/", utils.InjectApp(app, auth.AuthenticateMiddleware), utils.InjectApp(app, task.CreateTaskHandler))
 	taskApiRoutes.GET("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.GetTaskByIDHandler))
 	taskApiRoutes.DELETE("/:id", utils.InjectApp(app, auth.AuthenticateMiddleware), task.ExtractTaskIDMiddleware, utils.InjectApp(app, task.DeleteTaskByIDHandler))

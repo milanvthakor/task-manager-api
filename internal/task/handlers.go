@@ -18,6 +18,21 @@ type taskData struct {
 	Status      models.TaskStatus `json:"status"`
 }
 
+// GetTasksHandler handles retrieval of a list of tasks associated with the authenticated user.
+func GetTasksHandler(ctx *gin.Context, app *config.Application) {
+	userID := ctx.MustGet("userID").(uint)
+
+	// Retrieve tasks associated with the user from the database
+	tasks, err := app.TaskRepository.ListTasksByUserID(userID)
+	if err != nil {
+		log.Printf("Warning: Failed to retrieve tasks: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve tasks"})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, tasks)
+}
+
 // CreateTaskHandler handles the creation of a new task.
 func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 	userID := ctx.MustGet("userID").(uint)
