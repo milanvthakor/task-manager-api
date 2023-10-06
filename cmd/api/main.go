@@ -49,6 +49,7 @@ func main() {
 	taskApiRoutes.POST("/", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.CreateTaskHandler))
 	taskApiRoutes.GET("/:id", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.GetTaskByIDHandler))
 	taskApiRoutes.DELETE("/:id", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.DeleteTaskByIDHandler))
+	taskApiRoutes.PUT("/:id", utils.InjectApp(app, auth.Authenticate), utils.InjectApp(app, task.UpdateTaskByIDHandler))
 
 	// Simple health check endpoint.
 	r.GET("/health", func(c *gin.Context) {

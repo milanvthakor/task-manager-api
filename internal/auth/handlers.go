@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -9,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/milanvthakor/task-manager-api/internal/models"
-	"github.com/milanvthakor/task-manager-api/internal/validator"
 	"github.com/milanvthakor/task-manager-api/pkg/config"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,19 +16,6 @@ import (
 type userData struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-// validate validates the field values of the userData struct.
-func (u *userData) validate() error {
-	if !validator.IsValidEmail(u.Email) {
-		return errors.New("Invalid email")
-	}
-
-	if !validator.IsValidPassword(u.Password) {
-		return errors.New("Invalid password. The length must be between 8 and 12 characters")
-	}
-
-	return nil
 }
 
 // RegisterHandler handles user registration.

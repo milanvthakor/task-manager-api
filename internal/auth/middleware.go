@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/milanvthakor/task-manager-api/internal/validator"
 	"github.com/milanvthakor/task-manager-api/pkg/config"
 )
 
@@ -19,8 +20,12 @@ func ValidateInput(ctx *gin.Context, app *config.Application) {
 	}
 
 	// Validate inputs.
-	if err := ud.validate(); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	if !validator.IsValidEmail(ud.Email) {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid email"})
+		return
+	}
+	if !validator.IsValidPassword(ud.Password) {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid password. The length must be between 8 and 12 characters"})
 		return
 	}
 

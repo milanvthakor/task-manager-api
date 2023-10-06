@@ -2,7 +2,6 @@ package task
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,19 +19,6 @@ type TaskData struct {
 	Status      models.TaskStatus `json:"status"`
 }
 
-// validate validates the field values of the taskData struct.
-func (t *TaskData) validate() error {
-	if validator.IsBlank(t.Title) {
-		return errors.New("Invalid title. It must not be empty")
-	}
-
-	if !validator.IsValidTaskStatus(t.Status) {
-		return errors.New(`Invalid status. It can have one of the following values: "todo", "in progress", "done"`)
-	}
-
-	return nil
-}
-
 // CreateTaskHandler handles the creation of a new task.
 func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 	userID := ctx.MustGet("userID").(uint)
@@ -44,8 +30,12 @@ func CreateTaskHandler(ctx *gin.Context, app *config.Application) {
 	}
 
 	// Validate inputs.
-	if err := td.validate(); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	if validator.IsBlank(td.Title) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid title. It must not be empty"})
+		return
+	}
+	if !validator.IsValidTaskStatus(td.Status) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": `Invalid status. It can have one of the following values: "todo", "in progress", "done"`})
 		return
 	}
 
@@ -123,4 +113,67 @@ func DeleteTaskByIDHandler(ctx *gin.Context, app *config.Application) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
+}
+
+// UpdateTaskByIDHandler handles the updating of a task by ID only if it's associated with the authentication user.
+func UpdateTaskByIDHandler(ctx *gin.Context, app *config.Application) {
+	userID := ctx.MustGet("userID").(uint)
+
+	// Get the task ID from the URL parameters
+	taskIDStr := ctx.Param("id")
+	taskID, err := strconv.ParseUint(taskIDStr, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid task ID"})
+		return
+	}
+
+	// Retrieve the task from the database
+	task, err := app.TaskRepository.GetTaskByID(uint(taskID))
+	if err != nil {
+		log.Printf("Warning: Failed to get task details from the database: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve task"})
+		return
+	}
+
+	// Check if the task is associated with the authenticated user
+	if task == nil || task.UserID != userID {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+		return
+	}
+
+	// Parse request body to get updated details
+	var td TaskData
+	if err := ctx.ShouldBindJSON(&td); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid inputs"})
+		return
+	}
+
+	// Update only provided fields
+	if !validator.IsBlank(td.Title) {
+		task.Title = td.Title
+	}
+	if !validator.IsBlank(string(td.Status)) {
+		if !validator.IsValidTaskStatus(td.Status) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": `Invalid status. It can have one of the following values: "todo", "in progress", "done"`})
+			return
+		}
+
+		task.Status = td.Status
+	}
+	if !validator.IsBlank(td.Description) {
+		task.Description = td.Description
+	}
+
+	// Update the task in the database
+	updatedTask, err := app.TaskRepository.UpdateTask(task)
+	if err != nil {
+		log.Printf("Warning: Failed to update task: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update task"})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "Task updated successfully",
+		"task":    updatedTask,
+	})
 }
