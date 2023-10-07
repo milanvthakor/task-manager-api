@@ -2,6 +2,25 @@
 
 The RESTful API that allow users to create, read, update, and delete tasks. Users can register, log in, and access their own tasks only when authenticated.
 
+## Table of Contents
+1. [Project Design](#project-design)
+    1. [Code Structure](#code-structure)
+    2. [Database](#database)
+    3. [Authentication](#authentication)
+2. [Set up and Run API locally](#set)
+3. [API Documentation](#api-documentation)
+    1. [Base URL](#base-url)
+    2. [Endpoints](#endpoints)
+        1. [Health Check](#health-check)
+        2. [User Registration](#user-registration)
+        3. [User Login](#user-login)
+        4. [Get Tasks](#get-tasks)
+        5. [Create Task](#create-task)
+        6. [Get Task By ID](#get-task-by-id)
+        7. [Delete Task By ID](#delete-task-by-id)
+        8. [Update Task](#update-task)
+        9. [Mark Tasks as Done](#mark-tasks-as-done)
+
 ## Project Design
 
 ### Code Structure
@@ -27,7 +46,7 @@ JWT (JSON Web Tokens) is adopted for authentication in this API as it allows for
 2. Navigate to the directory where you want to clone the project.
 3. Clone the GitHub repository using its URL
 4. Navigate to the project directory that you just cloned.
-5. Install project dependencies using below command:
+5. Install project dependencies using the below command:
 
     ```
     go mod tidy
@@ -38,7 +57,7 @@ JWT (JSON Web Tokens) is adopted for authentication in this API as it allows for
     ```
     go run cmd/api/main.go
     ```
-    The terminal should display a message `Server is running on <PORT>`
+    The terminal should display the message `Server is running on <PORT>`
 
 You can now access the API endpoints using a tool like Postman or via the `curl` command.
 
@@ -100,7 +119,7 @@ http://localhost:<PORT>
 #### User Login
 - **URL**: `/api/login`
 - **Method**: `POST`
-- **Description**: This API endpoint allows users to login by providing their email and password.
+- **Description**: This API endpoint allows users to log in by providing their email and password.
 - **Request Body**: The request body must be in JSON format and include the following fields:
     - `email` (string, required): The email address of the user.
     - `password` (string, required): The password for the user account.
@@ -166,7 +185,7 @@ http://localhost:<PORT>
 - **Request Body**: The request body must be in JSON format and include the following fields:
     - `title` (string, required): The title of the task.
     - `description` (string, optional): The description of the task.
-    - `status` (string, required): The status of the task. It can have one of the following values: "todo", "in progress", "done".
+    - `status` (string, required): The status of the task. It can have one of the following values: "todo", "in progress", or "done".
 - **Example Request**:
     ```
     POST /api/tasks
@@ -197,7 +216,7 @@ http://localhost:<PORT>
 #### Get Task by ID
 - **URL**: `/api/tasks/{id}`
 - **Method**: `GET`
-- **Description**: This API endpoint allows users to retrieve details of a task by providing its unique ID. User is allowed to retrieve details of only his/her task.
+- **Description**: This API endpoint allows users to retrieve details of a task by providing its unique ID. The user is allowed to retrieve details of only his/her task.
 - **Headers**:
     - `Authorization` (string, required): The `Authorization` header must be set with a valid authentication token obtained from the `/login` endpoint. Use the format `Authorization: Bearer <token>`.
 - **Path Parameters**:
@@ -220,7 +239,7 @@ http://localhost:<PORT>
 #### Delete Task by ID
 - **URL**: `/api/tasks/{id}`
 - **Method**: `DELETE`
-- **Description**: This API endpoint allows users to delete a task by providing its unique ID. User is allowed to delete only his/her task.
+- **Description**: This API endpoint allows users to delete a task by providing its unique ID. The user is allowed to delete only his/her task.
 - **Headers**:
     - `Authorization` (string, required): The `Authorization` header must be set with a valid authentication token obtained from the `/login` endpoint. Use the format `Authorization: Bearer <token>`.
 - **Path Parameters**:
@@ -241,13 +260,13 @@ http://localhost:<PORT>
 #### Update Task
 - **URL**: `/api/tasks/{id}`
 - **Method**: `PUT`
-- **Description**: This API endpoint allows users to update a task details by providing its unique ID. User is allowed to update details of only his/her task.
+- **Description**: This API endpoint allows users to update task details by providing its unique ID. The user is allowed to update details of only his/her task.
 - **Headers**:
     - `Authorization` (string, required): The `Authorization` header must be set with a valid authentication token obtained from the `/login` endpoint. Use the format `Authorization: Bearer <token>`.
-- **Request Body**: The request body must be in JSON format and can include the any of the following fields:
+- **Request Body**: The request body must be in JSON format and can include any of the following fields:
     - `title` (string, optional): The title of the task.
     - `description` (string, optional): The description of the task.
-    - `status` (string, optional): The status of the task. It can have one of the following values: "todo", "in progress", "done".
+    - `status` (string, optional): The status of the task. It can have one of the following values: "todo", "in progress", or "done".
 - **Example Request**:
     ```
     PUT /api/tasks/1
@@ -278,7 +297,7 @@ http://localhost:<PORT>
 #### Mark Tasks as Done
 - **URL**: `/api/tasks/mark-done`
 - **Method**: `PATCH`
-- **Description**: This API endpoint allows users to mark status of multiple tasks as "done" by providing their unique IDs. User is allowed to update details of only his/her tasks.
+- **Description**: This API endpoint allows users to mark the status of multiple tasks as "done" by providing their unique IDs. The user is allowed to update details of only his/her tasks.
 - **Headers**:
     - `Authorization` (string, required): The `Authorization` header must be set with a valid authentication token obtained from the `/login` endpoint. Use the format `Authorization: Bearer <token>`.
 - **Request Body**: The request body must be in JSON format and include the list of task ID(s).
